@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: IdealHome
+
+server:
+  port: 8081
+
+idealista:
+  url: ${IDEALISTA_API}
+  secret: ${IDEALISTA_SECRET}
+  key: ${IDEALISTA_KEY}
