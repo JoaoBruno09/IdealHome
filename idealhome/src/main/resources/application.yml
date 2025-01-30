@@ -27,6 +27,7 @@ idealista:
     maxItems: 50
     isParkingSpaceIncluded: true
     bedrooms: 2
+    bathrooms: 2
     elevator: true
     newDevelopment: true
     size: 100
