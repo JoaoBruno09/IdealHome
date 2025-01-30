@@ -13,3 +13,20 @@ idealista:
   url: ${IDEALISTA_API}
   secret: ${IDEALISTA_SECRET}
   key: ${IDEALISTA_KEY}
+  grantType: ${IDEALISTA_GRANT_TYPE}
+  scope: ${IDEALISTA_SCOPE}
+  version: ${IDEALISTA_API_VERSION}
+  filters:
+    center: ${IDEALISTA_CENTER_FILTER}
+    maxPrice: ${IDEALISTA_MAX_PRICE_FILTER}
+    operation: "sale"
+    country: "pt"
+    propertyType: "homes"
+    distance: 40000
+    locale: "pt"
+    maxItems: 50
+    isParkingSpaceIncluded: true
+    bedrooms: 2
+    elevator: true
+    newDevelopment: true
+    size: 100

@@ -1,4 +1,4 @@
-package com.api.idealhome.models;
+package com.api.idealhome.models.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
