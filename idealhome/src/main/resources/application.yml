@@ -29,5 +29,4 @@ idealista:
     bedrooms: 2
     bathrooms: 2
     elevator: true
-    newDevelopment: true
-    size: 100
+    size: 90
