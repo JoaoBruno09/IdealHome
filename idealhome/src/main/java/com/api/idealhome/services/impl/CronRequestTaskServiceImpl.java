@@ -38,10 +38,15 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     private void fetchResults() {
         List<PropertyDTO> foundProperties = new ArrayList<>();
         PageableResponseDTO pageableResponseDTO;
+        boolean hasMorePages;
 
         do {
             pageableResponseDTO = idealistaClient.searchHomes(generateToken(), idealistaConfigs.getFilters());
             foundProperties.addAll(pageableResponseDTO.getElementList());
-        } while (pageableResponseDTO.getActualPage() <= pageableResponseDTO.getTotalPages());
+            hasMorePages = pageableResponseDTO.getActualPage() <= pageableResponseDTO.getTotalPages() && pageableResponseDTO.isPaginable();
+        } while (hasMorePages);
+
+        //Filter properties on Porto District
+        foundProperties = foundProperties.stream().filter(property -> "Porto".equalsIgnoreCase(property.getProvince())).toList();
     }
 }

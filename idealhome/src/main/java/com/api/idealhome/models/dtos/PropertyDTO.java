@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class PropertyDTO {
     private String propertyCode;
+    private String floor;
     private Double price;
     private Double size;
     private Integer rooms;

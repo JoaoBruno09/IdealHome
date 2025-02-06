@@ -22,7 +22,7 @@ idealista:
     operation: "sale"
     country: "pt"
     propertyType: "homes"
-    distance: 40000
+    distance: 30000
     locale: "pt"
     maxItems: 50
     isParkingSpaceIncluded: true
