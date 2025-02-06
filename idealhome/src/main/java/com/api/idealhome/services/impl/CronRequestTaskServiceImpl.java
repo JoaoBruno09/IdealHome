@@ -47,6 +47,6 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
         } while (hasMorePages);
 
         //Filter properties on Porto District
-        foundProperties = foundProperties.stream().filter(property -> "Porto".equalsIgnoreCase(property.getProvince())).toList();
+        foundProperties = foundProperties.stream().filter(property -> "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1).toList();
     }
 }
