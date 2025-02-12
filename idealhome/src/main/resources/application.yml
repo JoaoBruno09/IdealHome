@@ -13,6 +13,9 @@ notion:
   url: ${NOTION_URL}
   key: ${NOTION_KEY}
   version: ${NOTION_API_VERSION}
+  grantType: ${NOTION_GRANT_TYPE}
+  scope: ${NOTION_SCOPE}
+  dataBaseId: ${NOTION_DATABASE_ID}
 
 idealista:
   url: ${IDEALISTA_URL}

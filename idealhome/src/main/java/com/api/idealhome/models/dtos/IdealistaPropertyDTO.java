@@ -5,7 +5,7 @@ import lombok.Data;
 
 @AllArgsConstructor
 @Data
-public class PropertyDTO {
+public class IdealistaPropertyDTO {
     private String propertyCode;
     private String floor;
     private Double price;

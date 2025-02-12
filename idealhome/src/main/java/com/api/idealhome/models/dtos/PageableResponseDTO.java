@@ -13,5 +13,5 @@ public class PageableResponseDTO {
     private int actualPage;
     private boolean paginable;
     private List<String> summary;
-    private List<PropertyDTO> elementList;
+    private List<IdealistaPropertyDTO> elementList;
 }
