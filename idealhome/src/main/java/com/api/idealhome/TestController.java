@@ -15,6 +15,6 @@ public class TestController {
 
     @GetMapping
     public void getTestData() {
-        cronRequestTaskService.executeRequest();
+        cronRequestTaskService.fetchResults();
     }
 }

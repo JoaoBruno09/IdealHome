@@ -8,6 +8,13 @@ server:
 logging:
   level:
     org.springframework: INFO
+    com.api.idealhome: DEBUG
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: FULL
 
 notion:
   url: ${NOTION_URL}
@@ -37,3 +44,4 @@ idealista:
     bathrooms: 2
     elevator: true
     size: 90
+    sinceDate: W
