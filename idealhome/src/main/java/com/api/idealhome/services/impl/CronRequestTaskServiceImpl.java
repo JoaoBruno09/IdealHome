@@ -106,7 +106,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
         }
 
         try {
-            CompletableFuture.allOf(completableFutureList.toArray(new CompletableFuture[0])).get();
+            CompletableFuture.allOf(completableFutureList.toArray(CompletableFuture[]::new)).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
