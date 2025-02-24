@@ -89,7 +89,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
                                 .id(buildFieldDTO(TITLE, idealistaPropertyDTO.getPropertyCode()))
                                 .url(buildFieldDTO(URL, refractURL(idealistaPropertyDTO.getUrl())))
                                 .preco(buildFieldDTO(NUMBER, String.valueOf(idealistaPropertyDTO.getPrice())))
-                                .areaBruta(buildFieldDTO(NUMBER, String.valueOf(idealistaPropertyDTO.getSize()) + "m2"))
+                                .areaBruta(buildFieldDTO(NUMBER, String.valueOf(idealistaPropertyDTO.getSize())))
                                 .municipio(buildFieldDTO(TEXT, capitalizeStringFirstLetter(idealistaPropertyDTO.getMunicipality())))
                                 .morada(buildFieldDTO(TEXT, capitalizeStringFirstLetter(idealistaPropertyDTO.getAddress())))
                                 .andar(buildFieldDTO(TEXT, idealistaPropertyDTO.getFloor() + "º"))
