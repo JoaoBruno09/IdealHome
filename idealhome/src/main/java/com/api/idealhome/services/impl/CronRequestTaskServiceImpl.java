@@ -54,6 +54,8 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
                 "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 && notionPropertyIds.stream().noneMatch(id ->
                         id.contains(property.getPropertyCode()))).toList();
 
+        log.info("{} properties to be added into Notion.", newPropertiesToAdd.size());
+
         addNewPropertiesInNotion(newPropertiesToAdd);
 
     }
@@ -61,15 +63,17 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     private void findIdealistaProperties(List<IdealistaPropertyDTO> foundIdealistaProperties) {
         PageableResponseDTO pageableResponseDTO;
         boolean hasMorePages;
+        int numPage = 1;
 
         do {
+            idealistaConfigs.getFilters().put("numPage", String.valueOf(numPage));
             pageableResponseDTO = idealistaClient.searchHomes(generateToken(), idealistaConfigs.getFilters());
-            log.info(String.valueOf(pageableResponseDTO.getTotal()));
             foundIdealistaProperties.addAll(pageableResponseDTO.getElementList());
-            hasMorePages = pageableResponseDTO.getActualPage() <= pageableResponseDTO.getTotalPages() && pageableResponseDTO.isPaginable();
+            numPage++;
+            hasMorePages = numPage <= pageableResponseDTO.getTotalPages() && pageableResponseDTO.isPaginable();
         } while (hasMorePages);
 
-
+        log.info("Found {} properties in Idealista", pageableResponseDTO.getTotal());
     }
 
     private void getNotionProperties(List<String> notionPropertyIds) {
