@@ -135,13 +135,15 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     private void sendTelegramMessage(IdealistaPropertyDTO idealistaPropertyDTO) {
         String telegramMessage = "*✨🆕 Novo Imóvel à Venda\\!🆕✨*\n\n" +
                 "*🏡 Imóvel ID:* " + idealistaPropertyDTO.getPropertyCode() + "\n" +
-                "*🏗️ Nova Construção:* " + booleanValueToStringYesOrNo(idealistaPropertyDTO.getNewDevelopment()) + "\n" +
-                "*📍 Morada:* " + escapeMarkdownV2(idealistaPropertyDTO.getAddress() + ", " + idealistaPropertyDTO.getMunicipality()) + "\n" +
+                "*🏗️ Nova Construção:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getNewDevelopment())) + "\n" +
                 "*💰 Preço:* " + escapeMarkdownV2(String.valueOf(idealistaPropertyDTO.getPrice())) + "€*\n" +
+                "*📍 Morada:* " + escapeMarkdownV2(idealistaPropertyDTO.getAddress() + ", " + idealistaPropertyDTO.getMunicipality()) + "\n" +
                 "*🛏️ Quartos:* " + idealistaPropertyDTO.getRooms() + "\n" +
                 "*🏢 Andar:* " + escapeMarkdownV2(idealistaPropertyDTO.getFloor()) + "\n" +
+                "*🛗 Elevador:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getHasLift())) + "\n" +
+                "*🚗 Estacionamento:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getParkingSpace().getHasParkingSpace())) + "\n" +
                 "🔗 [Ver Imóvel](" + escapeMarkdownV2(refractURL(idealistaPropertyDTO.getUrl())) + ")\n" +
-                "📝 [Detalhes no Notion](" + escapeMarkdownV2((notionConfigs.getDataBaseUrl())) + ")";
+                "📝 [Mais detalhes no Notion](" + escapeMarkdownV2((notionConfigs.getDataBaseUrl())) + ")";
 
         TelegramRequestDTO telegramRequestDTO = TelegramRequestDTO.builder()
                 .chatId(telegramConfigs.getChatId())
@@ -199,14 +201,17 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     //TODO TEST MESSAGE THAT IS WORKING JUST FOR TEST PURPOSES
     private void sendTelegramMessageTest() {
         String telegramMessage = "*✨🆕 Novo Imóvel à Venda\\! 🆕✨*\n\n" +
-                "*🏡 Imóvel ID:* Teste \n" +
-                "*🏗️ Nova Construção:* Sim \n" +
-                "*📍 Morada:* Rua Teste \n" +
+                "*🏡 Imóvel ID:* Teste\n" +
+                "*🏗️ Nova Construção:* Sim\n" +
                 "*💰 Preço:* " + escapeMarkdownV2("200.000") + "€\n" +
-                "*🛏️ Quartos:* 3 \n" +
+                "*📍 Morada:* " + escapeMarkdownV2("Rua Teste, Teste") + "\n" +
+                "*🛏️ Quartos:* 3\n" +
+                "*🚿 Casas de Banho:* 3\n" +
                 "*🏢 Andar:* 3 \n" +
+                "*🛗 Elevador:* Sim\n" +
+                "*🚗 Estacionamento:* Sim\n" +
                 "🔗 [Ver Imóvel](" + escapeMarkdownV2("https://www.google.com/") + ")\n" +
-                "📝 [Detalhes no Notion](" + escapeMarkdownV2("https://www.google.com/") + ")";
+                "📝 [Mais detalhes no Notion](" + escapeMarkdownV2("https://www.google.com/") + ")";
 
         TelegramRequestDTO telegramRequestDTO = TelegramRequestDTO.builder()
                 .chatId(telegramConfigs.getChatId())
