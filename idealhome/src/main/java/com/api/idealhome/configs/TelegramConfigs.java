@@ -6,13 +6,9 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "notion")
-public class NotionConfigs {
+@ConfigurationProperties(prefix = "telegram")
+public class TelegramConfigs {
     private String url;
     private String key;
-    private String version;
-    private String grantType;
-    private String scope;
-    private String dataBaseId;
-    private String dataBaseUrl;
+    private String chatId;
 }

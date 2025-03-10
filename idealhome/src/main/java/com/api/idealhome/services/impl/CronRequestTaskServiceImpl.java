@@ -2,8 +2,10 @@ package com.api.idealhome.services.impl;
 
 import com.api.idealhome.clients.IdealistaClient;
 import com.api.idealhome.clients.NotionClient;
+import com.api.idealhome.clients.TelegramClient;
 import com.api.idealhome.configs.IdealistaConfigs;
 import com.api.idealhome.configs.NotionConfigs;
+import com.api.idealhome.configs.TelegramConfigs;
 import com.api.idealhome.models.dtos.FieldDTO;
 import com.api.idealhome.models.dtos.IdealistaPropertyDTO;
 import com.api.idealhome.models.dtos.NotionPropertyType;
@@ -11,6 +13,7 @@ import com.api.idealhome.models.dtos.NotionRequestDTO;
 import com.api.idealhome.models.dtos.PageableResponseDTO;
 import com.api.idealhome.models.dtos.ParentDTO;
 import com.api.idealhome.models.dtos.RowFieldsDTO;
+import com.api.idealhome.models.dtos.TelegramRequestDTO;
 import com.api.idealhome.models.dtos.TextContentDTO;
 import com.api.idealhome.models.dtos.TextFieldDTO;
 import com.api.idealhome.services.CronRequestTaskService;
@@ -40,6 +43,8 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     private final IdealistaConfigs idealistaConfigs;
     private final NotionClient notionClient;
     private final NotionConfigs notionConfigs;
+    private final TelegramClient telegramClient;
+    private final TelegramConfigs telegramConfigs;
 
     @Override
     public void fetchResults() {
@@ -55,9 +60,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
                         id.contains(property.getPropertyCode()))).toList();
 
         log.info("{} properties to be added into Notion.", newPropertiesToAdd.size());
-
-        addNewPropertiesInNotion(newPropertiesToAdd);
-
+        addNewPropertiesInNotionAndSendTelegramNotification(newPropertiesToAdd);
     }
 
     private void findIdealistaProperties(List<IdealistaPropertyDTO> foundIdealistaProperties) {
@@ -81,7 +84,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
                 .getResults().forEach(property -> notionPropertyIds.add(property.getProperties().getId().getTitle().getFirst().getText().getContent()));
     }
 
-    private void addNewPropertiesInNotion(List<IdealistaPropertyDTO> newPropertiesToAdd) {
+    private void addNewPropertiesInNotionAndSendTelegramNotification(List<IdealistaPropertyDTO> newPropertiesToAdd) {
         List<CompletableFuture<Void>> completableFutureList = new ArrayList<>();
 
         for (IdealistaPropertyDTO idealistaPropertyDTO : newPropertiesToAdd) {
@@ -106,6 +109,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
                         .build();
 
                 notionClient.addNewProperty(notionConfigs.getKey(), notionConfigs.getVersion(), notionRequest);
+                sendTelegramMessage(idealistaPropertyDTO);
             }));
         }
 
@@ -128,6 +132,25 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
         };
     }
 
+    private void sendTelegramMessage(IdealistaPropertyDTO idealistaPropertyDTO) {
+        String telegramMessage = "*✨🆕 Novo Imóvel à Venda\\!🆕✨*\n\n" +
+                "*🏡 Imóvel ID:* " + idealistaPropertyDTO.getPropertyCode() + "\n" +
+                "*🏗️ Nova Construção:* " + booleanValueToStringYesOrNo(idealistaPropertyDTO.getNewDevelopment()) + "\n" +
+                "*📍 Morada:* " + escapeMarkdownV2(idealistaPropertyDTO.getAddress() + ", " + idealistaPropertyDTO.getMunicipality()) + "\n" +
+                "*💰 Preço:* " + escapeMarkdownV2(String.valueOf(idealistaPropertyDTO.getPrice())) + "€*\n" +
+                "*🛏️ Quartos:* " + idealistaPropertyDTO.getRooms() + "\n" +
+                "*🏢 Andar:* " + escapeMarkdownV2(idealistaPropertyDTO.getFloor()) + "\n" +
+                "🔗 [Ver Imóvel](" + escapeMarkdownV2(refractURL(idealistaPropertyDTO.getUrl())) + ")\n" +
+                "📝 [Detalhes no Notion](" + escapeMarkdownV2((notionConfigs.getDataBaseUrl())) + ")";
+
+        TelegramRequestDTO telegramRequestDTO = TelegramRequestDTO.builder()
+                .chatId(telegramConfigs.getChatId())
+                .text(telegramMessage)
+                .parseMode("MarkdownV2")
+                .build();
+        telegramClient.sendTelegramMessage(telegramConfigs.getKey(), telegramRequestDTO);
+    }
+
     private String generateToken() {
         String authorizationHeader = "Basic " + Base64.getEncoder().encodeToString((idealistaConfigs.getKey() + idealistaConfigs.getSecret()).getBytes());
 
@@ -145,5 +168,51 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
 
     private String refractURL(String url) {
         return url.contains("/empreendimento") ? url.replace("/empreendimento", "/imovel") : url;
+    }
+
+    // Function to escape special MarkdownV2 characters
+    private String escapeMarkdownV2(String text) {
+        return text.replace("_", "\\_")
+                .replace("*", "\\*")
+                .replace("[", "\\[")
+                .replace("]", "\\]")
+                .replace("(", "\\(")
+                .replace(")", "\\)")
+                .replace("~", "\\~")
+                .replace("`", "\\`")
+                .replace(">", "\\>")
+                .replace("#", "\\#")
+                .replace("+", "\\+")
+                .replace("-", "\\-")
+                .replace("=", "\\=")
+                .replace("|", "\\|")
+                .replace("{", "\\{")
+                .replace("}", "\\}")
+                .replace(".", "\\.")
+                .replace("!", "\\!");
+    }
+
+    private String booleanValueToStringYesOrNo(boolean value) {
+        return Boolean.TRUE.equals(value) ? "Sim" : "Não";
+    }
+
+    //TODO TEST MESSAGE THAT IS WORKING JUST FOR TEST PURPOSES
+    private void sendTelegramMessageTest() {
+        String telegramMessage = "*✨🆕 Novo Imóvel à Venda\\! 🆕✨*\n\n" +
+                "*🏡 Imóvel ID:* Teste \n" +
+                "*🏗️ Nova Construção:* Sim \n" +
+                "*📍 Morada:* Rua Teste \n" +
+                "*💰 Preço:* " + escapeMarkdownV2("200.000") + "€\n" +
+                "*🛏️ Quartos:* 3 \n" +
+                "*🏢 Andar:* 3 \n" +
+                "🔗 [Ver Imóvel](" + escapeMarkdownV2("https://www.google.com/") + ")\n" +
+                "📝 [Detalhes no Notion](" + escapeMarkdownV2("https://www.google.com/") + ")";
+
+        TelegramRequestDTO telegramRequestDTO = TelegramRequestDTO.builder()
+                .chatId(telegramConfigs.getChatId())
+                .text(telegramMessage)
+                .parseMode("MarkdownV2")
+                .build();
+        telegramClient.sendTelegramMessage(telegramConfigs.getKey(), telegramRequestDTO);
     }
 }
