@@ -19,6 +19,7 @@ import com.api.idealhome.models.dtos.TextFieldDTO;
 import com.api.idealhome.services.CronRequestTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     private final TelegramClient telegramClient;
     private final TelegramConfigs telegramConfigs;
 
+    @Scheduled(cron = "0 0 13 * * ?", zone = "Europe/Lisbon")
     @Override
     public void fetchResults() {
         List<IdealistaPropertyDTO> foundIdealistaProperties = new ArrayList<>();
