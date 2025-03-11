@@ -9,11 +9,13 @@ IdealHome is a back-end application that finds real estate properties on Idealis
 - <b>Customizable Criteria:</b> Easily adjust search parameters to suit your needs.
 
 ## 👨‍💻 Technologies
+<div style="display: inline_block"><br>
 <img align="center" alt="Java" height="40" width="40" src="https://github.com/devicons/devicon/blob/master/icons/java/java-original.svg">
 <img align="center" alt="Spring" height="40" width="40" src="https://github.com/devicons/devicon/blob/master/icons/spring/spring-original.svg">
 <img align="center" alt="Idealista" height="40" width="40" src="https://avatars.githubusercontent.com/u/12275373?s=400&u=5fefa7963d805bef05f73a765e43f9f7dcfbc310&v=4">
 <img align="center" alt="Notion" height="40" width="40" src="https://github.com/devicons/devicon/blob/master/icons/notion/notion-original.svg">
-<img align="center" alt="Telegram" height="40" width="40" src="<img align="center" alt="Notion" height="30" width="40" src="https://github.com/devicons/devicon/blob/master/icons/notion/notion-original.svg">
+<img align="center" alt="Telegram" height="40" width="40" src="https://upload.wikimedia.org/wikipedia/commons/8/83/Telegram_2019_Logo.svg">
+</div>
 
 ## 📂 Repository Structure
 
