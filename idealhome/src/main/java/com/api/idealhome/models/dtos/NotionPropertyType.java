@@ -8,5 +8,6 @@ public enum NotionPropertyType {
     NUMBER,
     URL,
     CHECKBOX,
-    TEXT
+    TEXT,
+    DATE
 }

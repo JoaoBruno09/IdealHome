@@ -20,4 +20,5 @@ public class FieldDTO {
     private List<TextFieldDTO> title;
     @JsonProperty("rich_text")
     private List<TextFieldDTO> richText;
+    private DateFieldDTO date;
 }

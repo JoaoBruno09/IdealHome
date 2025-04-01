@@ -35,6 +35,8 @@ public class RowFieldsDTO {
     private FieldDTO interesse;
     @JsonProperty("Estado")
     private FieldDTO estado;
+    @JsonProperty("Data de Criação")
+    private FieldDTO dataDeCriacao;
     @JsonProperty("ID")
     private FieldDTO id;
 }
