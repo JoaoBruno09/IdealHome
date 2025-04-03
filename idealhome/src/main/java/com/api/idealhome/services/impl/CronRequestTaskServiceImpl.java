@@ -14,6 +14,7 @@ import com.api.idealhome.models.dtos.NotionRequestDTO;
 import com.api.idealhome.models.dtos.PageableResponseDTO;
 import com.api.idealhome.models.dtos.ParentDTO;
 import com.api.idealhome.models.dtos.ParkingSpaceDTO;
+import com.api.idealhome.models.dtos.RowDTO;
 import com.api.idealhome.models.dtos.RowFieldsDTO;
 import com.api.idealhome.models.dtos.TelegramRequestDTO;
 import com.api.idealhome.models.dtos.TextContentDTO;
@@ -57,15 +58,15 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     @Override
     public void fetchResults() {
         List<IdealistaPropertyDTO> foundIdealistaProperties = new ArrayList<>();
-        List<String> notionPropertyIds = new ArrayList<>();
+        List<RowDTO> notionProperties = new ArrayList<>();
 
         findIdealistaProperties(foundIdealistaProperties);
-        getNotionProperties(notionPropertyIds);
+        getNotionProperties(notionProperties);
 
         //Filter properties on Porto District, has more than one room, and do not exist already in notion
         List<IdealistaPropertyDTO> newPropertiesToAdd = foundIdealistaProperties.stream().filter(property ->
-                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 && notionPropertyIds.stream().noneMatch(id ->
-                        id.contains(property.getPropertyCode()))).toList();
+                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 && notionProperties.stream().noneMatch(rowDTO ->
+                        rowDTO.getProperties().getId().getTitle().getFirst().getText().getContent().contains(property.getPropertyCode()))).toList();
 
         log.info("{} properties to be added into Notion.", newPropertiesToAdd.size());
         addNewPropertiesInNotionAndSendTelegramNotification(newPropertiesToAdd);
@@ -87,9 +88,9 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
         log.info("Found {} properties in Idealista", pageableResponseDTO.getTotal());
     }
 
-    private void getNotionProperties(List<String> notionPropertyIds) {
+    private void getNotionProperties(List<RowDTO> notionPropertyIds) {
         notionClient.getPropertiesDataBase(notionConfigs.getKey(), notionConfigs.getGrantType(), notionConfigs.getScope(), notionConfigs.getVersion(), notionConfigs.getDataBaseId())
-                .getResults().forEach(property -> notionPropertyIds.add(property.getProperties().getId().getTitle().getFirst().getText().getContent()));
+                .getResults().forEach(notionPropertyIds::add);
     }
 
     private void addNewPropertiesInNotionAndSendTelegramNotification(List<IdealistaPropertyDTO> newPropertiesToAdd) {
