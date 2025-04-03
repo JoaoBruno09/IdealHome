@@ -6,12 +6,14 @@ import com.api.idealhome.clients.TelegramClient;
 import com.api.idealhome.configs.IdealistaConfigs;
 import com.api.idealhome.configs.NotionConfigs;
 import com.api.idealhome.configs.TelegramConfigs;
+import com.api.idealhome.models.dtos.DateFieldDTO;
 import com.api.idealhome.models.dtos.FieldDTO;
 import com.api.idealhome.models.dtos.IdealistaPropertyDTO;
 import com.api.idealhome.models.dtos.NotionPropertyType;
 import com.api.idealhome.models.dtos.NotionRequestDTO;
 import com.api.idealhome.models.dtos.PageableResponseDTO;
 import com.api.idealhome.models.dtos.ParentDTO;
+import com.api.idealhome.models.dtos.ParkingSpaceDTO;
 import com.api.idealhome.models.dtos.RowFieldsDTO;
 import com.api.idealhome.models.dtos.TelegramRequestDTO;
 import com.api.idealhome.models.dtos.TextContentDTO;
@@ -22,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -30,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static com.api.idealhome.models.dtos.NotionPropertyType.CHECKBOX;
+import static com.api.idealhome.models.dtos.NotionPropertyType.DATE;
 import static com.api.idealhome.models.dtos.NotionPropertyType.NUMBER;
 import static com.api.idealhome.models.dtos.NotionPropertyType.TEXT;
 import static com.api.idealhome.models.dtos.NotionPropertyType.TITLE;
@@ -107,6 +113,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
                                 .novo(buildFieldDTO(CHECKBOX, String.valueOf(isNewDevelopment)))
                                 .terminado(isNewDevelopment ? buildFieldDTO(CHECKBOX, String.valueOf(idealistaPropertyDTO.getNewDevelopmentFinished())) : null)
                                 .precoArea(buildFieldDTO(NUMBER, String.valueOf(idealistaPropertyDTO.getPriceByArea())))
+                                .dataDeCriacao(buildFieldDTO(DATE, LocalDate.now(ZoneId.of("Europe/Lisbon")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
                                 .build())
                         .build();
 
@@ -123,6 +130,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     }
 
     private FieldDTO buildFieldDTO(NotionPropertyType fieldType, String stringValue) {
+        stringValue = Optional.ofNullable(stringValue).orElse("");
         return switch (fieldType) {
             case TITLE ->
                     FieldDTO.builder().title(List.of(TextFieldDTO.builder().text(TextContentDTO.builder().content(stringValue).build()).build())).build();
@@ -131,6 +139,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
             case CHECKBOX -> FieldDTO.builder().checkbox(Boolean.parseBoolean(stringValue)).build();
             case TEXT ->
                     FieldDTO.builder().richText(List.of(TextFieldDTO.builder().text(TextContentDTO.builder().content(stringValue).build()).build())).build();
+            case DATE -> FieldDTO.builder().date(DateFieldDTO.builder().start(stringValue).build()).build();
         };
     }
 
@@ -138,12 +147,12 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
         String telegramMessage = "*✨🆕 Novo Imóvel à Venda\\!🆕✨*\n\n" +
                 "*🏡 Imóvel ID:* " + idealistaPropertyDTO.getPropertyCode() + "\n" +
                 "*🏗️ Nova Construção:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getNewDevelopment())) + "\n" +
-                "*💰 Preço:* " + escapeMarkdownV2(String.valueOf(idealistaPropertyDTO.getPrice())) + "€*\n" +
+                "*💰 Preço:* " + escapeMarkdownV2(String.valueOf(idealistaPropertyDTO.getPrice())) + "€\n" +
                 "*📍 Morada:* " + escapeMarkdownV2(idealistaPropertyDTO.getAddress() + ", " + idealistaPropertyDTO.getMunicipality()) + "\n" +
                 "*🛏️ Quartos:* " + idealistaPropertyDTO.getRooms() + "\n" +
                 "*🏢 Andar:* " + escapeMarkdownV2(idealistaPropertyDTO.getFloor()) + "\n" +
                 "*🛗 Elevador:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getHasLift())) + "\n" +
-                "*🚗 Estacionamento:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getParkingSpace().getHasParkingSpace())) + "\n" +
+                "*🚗 Estacionamento:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(Optional.ofNullable(idealistaPropertyDTO.getParkingSpace()).map(ParkingSpaceDTO::getHasParkingSpace).orElse(false))) + "\n" +
                 "🔗 [Ver Imóvel](" + escapeMarkdownV2(refractURL(idealistaPropertyDTO.getUrl())) + ")\n" +
                 "📝 [Mais detalhes no Notion](" + escapeMarkdownV2((notionConfigs.getDataBaseUrl())) + ")";
 
@@ -176,7 +185,8 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
 
     // Function to escape special MarkdownV2 characters
     private String escapeMarkdownV2(String text) {
-        return text.replace("_", "\\_")
+        return Optional.ofNullable(text).orElse("")
+                .replace("_", "\\_")
                 .replace("*", "\\*")
                 .replace("[", "\\[")
                 .replace("]", "\\]")
@@ -198,28 +208,5 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
 
     private String booleanValueToStringYesOrNo(boolean value) {
         return Boolean.TRUE.equals(value) ? "Sim" : "Não";
-    }
-
-    //TODO TEST MESSAGE THAT IS WORKING JUST FOR TEST PURPOSES
-    private void sendTelegramMessageTest() {
-        String telegramMessage = "*✨🆕 Novo Imóvel à Venda\\! 🆕✨*\n\n" +
-                "*🏡 Imóvel ID:* Teste\n" +
-                "*🏗️ Nova Construção:* Sim\n" +
-                "*💰 Preço:* " + escapeMarkdownV2("200.000") + "€\n" +
-                "*📍 Morada:* " + escapeMarkdownV2("Rua Teste, Teste") + "\n" +
-                "*🛏️ Quartos:* 3\n" +
-                "*🚿 Casas de Banho:* 3\n" +
-                "*🏢 Andar:* 3 \n" +
-                "*🛗 Elevador:* Sim\n" +
-                "*🚗 Estacionamento:* Sim\n" +
-                "🔗 [Ver Imóvel](" + escapeMarkdownV2("https://www.google.com/") + ")\n" +
-                "📝 [Mais detalhes no Notion](" + escapeMarkdownV2("https://www.google.com/") + ")";
-
-        TelegramRequestDTO telegramRequestDTO = TelegramRequestDTO.builder()
-                .chatId(telegramConfigs.getChatId())
-                .text(telegramMessage)
-                .parseMode("MarkdownV2")
-                .build();
-        telegramClient.sendTelegramMessage(telegramConfigs.getKey(), telegramRequestDTO);
     }
 }
