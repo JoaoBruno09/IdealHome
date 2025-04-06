@@ -9,8 +9,9 @@ import com.api.idealhome.configs.TelegramConfigs;
 import com.api.idealhome.models.dtos.DateFieldDTO;
 import com.api.idealhome.models.dtos.FieldDTO;
 import com.api.idealhome.models.dtos.IdealistaPropertyDTO;
+import com.api.idealhome.models.dtos.NotionAddPropertyRequestDTO;
 import com.api.idealhome.models.dtos.NotionPropertyType;
-import com.api.idealhome.models.dtos.NotionRequestDTO;
+import com.api.idealhome.models.dtos.NotionUpdatePropertyRequestDTO;
 import com.api.idealhome.models.dtos.PageableResponseDTO;
 import com.api.idealhome.models.dtos.ParentDTO;
 import com.api.idealhome.models.dtos.ParkingSpaceDTO;
@@ -19,7 +20,6 @@ import com.api.idealhome.models.dtos.RowFieldsDTO;
 import com.api.idealhome.models.dtos.TelegramRequestDTO;
 import com.api.idealhome.models.dtos.TextContentDTO;
 import com.api.idealhome.models.dtos.TextFieldDTO;
-import com.api.idealhome.services.CronRequestTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -45,7 +45,7 @@ import static com.api.idealhome.models.dtos.NotionPropertyType.URL;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class CronRequestTaskServiceImpl implements CronRequestTaskService {
+public class CronRequestTaskServiceImpl {
 
     private final IdealistaClient idealistaClient;
     private final IdealistaConfigs idealistaConfigs;
@@ -54,9 +54,35 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
     private final TelegramClient telegramClient;
     private final TelegramConfigs telegramConfigs;
 
+    @Scheduled(cron = "0 0 12 * * ?", zone = "Europe/Lisbon")
+    public void deleteOldNotionPropertiesAlreadySeen() {
+        List<RowDTO> notionProperties = new ArrayList<>();
+        getNotionProperties(notionProperties);
+
+        List<RowDTO> notionPropertiesToDelete = notionProperties.stream()
+                .filter(property ->
+                        LocalDate.parse(property.getProperties().getDataDeCriacao().getDate().getStart()).isBefore(LocalDate.now()) &&
+                                Boolean.TRUE.equals(property.getProperties().getVisto().getCheckbox()) &&
+                                Boolean.FALSE.equals(property.getProperties().getInteresse().getCheckbox()))
+                .toList();
+
+        List<CompletableFuture<Void>> completableFutureList = new ArrayList<>();
+        NotionUpdatePropertyRequestDTO notionUpdatePropertyRequestDTO = NotionUpdatePropertyRequestDTO.builder().archived(false).inTrash(true).build();
+        for (RowDTO rowDTO : notionPropertiesToDelete) {
+            completableFutureList.add(CompletableFuture.runAsync(() ->
+                    notionClient.updateProperty(notionConfigs.getKey(), notionConfigs.getVersion(), notionUpdatePropertyRequestDTO, rowDTO.getId())));
+        }
+
+        try {
+            CompletableFuture.allOf(completableFutureList.toArray(CompletableFuture[]::new)).get();
+            log.info("Deleted {} properties to from Notion.", notionPropertiesToDelete.size());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Scheduled(cron = "0 0 13 * * ?", zone = "Europe/Lisbon")
-    @Override
-    public void fetchResults() {
+    public void findNewPropertiesAndAddToNotion() {
         List<IdealistaPropertyDTO> foundIdealistaProperties = new ArrayList<>();
         List<RowDTO> notionProperties = new ArrayList<>();
 
@@ -99,7 +125,7 @@ public class CronRequestTaskServiceImpl implements CronRequestTaskService {
         for (IdealistaPropertyDTO idealistaPropertyDTO : newPropertiesToAdd) {
             completableFutureList.add(CompletableFuture.runAsync(() -> {
                 boolean isNewDevelopment = idealistaPropertyDTO.getNewDevelopment();
-                NotionRequestDTO notionRequest = NotionRequestDTO.builder()
+                NotionAddPropertyRequestDTO notionRequest = NotionAddPropertyRequestDTO.builder()
                         .parent(ParentDTO.builder().databaseId(notionConfigs.getDataBaseId()).build())
                         .properties(RowFieldsDTO.builder()
                                 .id(buildFieldDTO(TITLE, idealistaPropertyDTO.getPropertyCode()))

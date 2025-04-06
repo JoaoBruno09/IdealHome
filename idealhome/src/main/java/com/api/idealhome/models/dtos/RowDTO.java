@@ -6,5 +6,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class RowDTO {
+    private String id;
     private RowFieldsDTO properties;
 }

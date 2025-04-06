@@ -39,4 +39,6 @@ public class RowFieldsDTO {
     private FieldDTO dataDeCriacao;
     @JsonProperty("ID")
     private FieldDTO id;
+    @JsonProperty("Visto")
+    private FieldDTO visto;
 }

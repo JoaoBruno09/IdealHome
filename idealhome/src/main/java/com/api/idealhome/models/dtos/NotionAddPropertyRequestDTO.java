@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 @Builder
-public class NotionRequestDTO {
+public class NotionAddPropertyRequestDTO {
     private ParentDTO parent;
     private RowFieldsDTO properties;
 }
