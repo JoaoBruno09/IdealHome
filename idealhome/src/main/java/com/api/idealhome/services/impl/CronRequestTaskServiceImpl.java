@@ -96,6 +96,7 @@ public class CronRequestTaskServiceImpl {
 
         log.info("{} properties to be added into Notion.", newPropertiesToAdd.size());
         addNewPropertiesInNotionAndSendTelegramNotification(newPropertiesToAdd);
+        log.info("Added {} properties into Notion.", newPropertiesToAdd.size());
     }
 
     private void findIdealistaProperties(List<IdealistaPropertyDTO> foundIdealistaProperties) {
