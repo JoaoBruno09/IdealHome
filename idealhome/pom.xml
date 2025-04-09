@@ -13,7 +13,6 @@
     <version>1.0.0</version>
     <name>idealhome</name>
     <description>Find your dream ideal home</description>
-    <packaging>war</packaging>
     <url/>
     <licenses>
         <license/>
