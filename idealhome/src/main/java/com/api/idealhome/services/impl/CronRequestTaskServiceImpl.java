@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -54,14 +55,17 @@ public class CronRequestTaskServiceImpl {
     private final TelegramClient telegramClient;
     private final TelegramConfigs telegramConfigs;
 
-    @Scheduled(cron = "0 0 12 * * ?", zone = "Europe/Lisbon")
+    private static final List<String> MUNICIPIO_NOT_INTERESTED_IN = List.of("penafiel", "arcozelo", "serzedo",
+            "são felix", "avintes", "póvoa de varzim");
+
+    @Scheduled(cron = "0 0 13 * * ?", zone = "Europe/Lisbon")
     public void deleteOldNotionPropertiesAlreadySeen() {
         List<RowDTO> notionProperties = new ArrayList<>();
         getNotionProperties(notionProperties);
 
         List<RowDTO> notionPropertiesToDelete = notionProperties.stream()
                 .filter(property ->
-                        LocalDate.parse(property.getProperties().getDataDeCriacao().getDate().getStart()).isBefore(LocalDate.now()) &&
+                        ChronoUnit.DAYS.between(LocalDate.parse(property.getProperties().getDataDeCriacao().getDate().getStart()), LocalDate.now()) > 2 &&
                                 Boolean.TRUE.equals(property.getProperties().getVisto().getCheckbox()) &&
                                 Boolean.FALSE.equals(property.getProperties().getInteresse().getCheckbox()))
                 .toList();
@@ -81,7 +85,7 @@ public class CronRequestTaskServiceImpl {
         }
     }
 
-    @Scheduled(cron = "0 0 13 * * ?", zone = "Europe/Lisbon")
+    @Scheduled(cron = "0 0 12 * * ?", zone = "Europe/Lisbon")
     public void findNewPropertiesAndAddToNotion() {
         List<IdealistaPropertyDTO> foundIdealistaProperties = new ArrayList<>();
         List<RowDTO> notionProperties = new ArrayList<>();
@@ -91,8 +95,9 @@ public class CronRequestTaskServiceImpl {
 
         //Filter properties on Porto District, has more than one room, and do not exist already in notion
         List<IdealistaPropertyDTO> newPropertiesToAdd = foundIdealistaProperties.stream().filter(property ->
-                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 && notionProperties.stream().noneMatch(rowDTO ->
-                        rowDTO.getProperties().getId().getTitle().getFirst().getText().getContent().contains(property.getPropertyCode()))).toList();
+                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 && !MUNICIPIO_NOT_INTERESTED_IN.contains(property.getMunicipality().toLowerCase()) &&
+                        notionProperties.stream().noneMatch(rowDTO ->
+                                rowDTO.getProperties().getId().getTitle().getFirst().getText().getContent().contains(property.getPropertyCode()))).toList();
 
         log.info("{} properties to be added into Notion.", newPropertiesToAdd.size());
         addNewPropertiesInNotionAndSendTelegramNotification(newPropertiesToAdd);
@@ -177,6 +182,7 @@ public class CronRequestTaskServiceImpl {
                 "*🏗️ Nova Construção:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getNewDevelopment())) + "\n" +
                 "*💰 Preço:* " + escapeMarkdownV2(String.valueOf(idealistaPropertyDTO.getPrice())) + "€\n" +
                 "*📍 Morada:* " + escapeMarkdownV2(idealistaPropertyDTO.getAddress() + ", " + idealistaPropertyDTO.getMunicipality()) + "\n" +
+                "*📐 Área Bruta:* " + escapeMarkdownV2(idealistaPropertyDTO.getSize() + "m²") + "\n" +
                 "*🛏️ Quartos:* " + idealistaPropertyDTO.getRooms() + "\n" +
                 "*🏢 Andar:* " + escapeMarkdownV2(idealistaPropertyDTO.getFloor()) + "\n" +
                 "*🛗 Elevador:* " + escapeMarkdownV2(booleanValueToStringYesOrNo(idealistaPropertyDTO.getHasLift())) + "\n" +
