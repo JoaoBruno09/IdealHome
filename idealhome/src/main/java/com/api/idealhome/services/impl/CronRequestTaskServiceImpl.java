@@ -96,7 +96,8 @@ public class CronRequestTaskServiceImpl {
 
         //Filter properties on Porto District, has more than one room, and do not exist already in notion
         List<IdealistaPropertyDTO> newPropertiesToAdd = foundIdealistaProperties.stream().filter(property ->
-                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 && !MUNICIPIO_NOT_INTERESTED_IN.contains(property.getMunicipality().toLowerCase()) &&
+                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 &&
+                        !MUNICIPIO_NOT_INTERESTED_IN.contains(property.getMunicipality().toLowerCase()) && property.getSize() > 90 &&
                         notionProperties.stream().noneMatch(rowDTO ->
                                 rowDTO.getProperties().getId().getTitle().getFirst().getText().getContent().contains(property.getPropertyCode()))).toList();
 
