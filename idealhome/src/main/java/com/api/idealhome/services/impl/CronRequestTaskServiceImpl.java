@@ -56,7 +56,8 @@ public class CronRequestTaskServiceImpl {
     private final TelegramConfigs telegramConfigs;
 
     private static final List<String> MUNICIPIO_NOT_INTERESTED_IN = List.of("penafiel", "arcozelo", "serzedo",
-            "são felix", "avintes", "póvoa de varzim");
+            "são felix", "avintes", "póvoa de varzim", "grijó", "sermonde", "bougado", "santa marinha", "são pedro da afurada",
+            "oliveira do douro", "fânzeres", "são pedro da cova", "gulpilares", "valadares", "mafamude", "vilar do paríso", "canelas");
 
     @Scheduled(cron = "0 0 13 * * ?", zone = "Europe/Lisbon")
     public void deleteOldNotionPropertiesAlreadySeen() {
