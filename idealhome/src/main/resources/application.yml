@@ -55,3 +55,7 @@ idealista:
     elevator: true
     size: 90
     sinceDate: Y
+  customFilters:
+    minimumRooms: 2
+    province: ${PROVINCE}
+    notInterestedMunicipality: ${NOT_INTERESTED_MUNICIPALITY}

@@ -1,5 +1,6 @@
 package com.api.idealhome.configs;
 
+import com.api.idealhome.models.CustomFilters;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -17,4 +18,5 @@ public class IdealistaConfigs {
     private String scope;
     private String version;
     private Map<String, String> filters;
+    private CustomFilters customFilters;
 }

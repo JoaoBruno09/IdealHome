@@ -55,10 +55,6 @@ public class CronRequestTaskServiceImpl {
     private final TelegramClient telegramClient;
     private final TelegramConfigs telegramConfigs;
 
-    private static final List<String> MUNICIPIO_NOT_INTERESTED_IN = List.of("penafiel", "arcozelo", "serzedo",
-            "são felix", "avintes", "póvoa de varzim", "grijó", "sermonde", "bougado", "santa marinha", "são pedro da afurada",
-            "oliveira do douro", "fânzeres", "são pedro da cova", "gulpilares", "valadares", "mafamude", "vilar do paríso", "canelas");
-
     @Scheduled(cron = "0 0 13 * * ?", zone = "Europe/Lisbon")
     public void deleteOldNotionPropertiesAlreadySeen() {
         List<RowDTO> notionProperties = new ArrayList<>();
@@ -94,10 +90,11 @@ public class CronRequestTaskServiceImpl {
         findIdealistaProperties(foundIdealistaProperties);
         getNotionProperties(notionProperties);
 
-        //Filter properties on Porto District, has more than one room, and do not exist already in notion
         List<IdealistaPropertyDTO> newPropertiesToAdd = foundIdealistaProperties.stream().filter(property ->
-                "Porto".equalsIgnoreCase(property.getProvince()) && property.getRooms() > 1 &&
-                        !MUNICIPIO_NOT_INTERESTED_IN.contains(property.getMunicipality().toLowerCase()) && property.getSize() > 90 &&
+                idealistaConfigs.getCustomFilters().getProvince().equalsIgnoreCase(property.getProvince()) &&
+                        property.getRooms() >= idealistaConfigs.getCustomFilters().getMinimumRooms() &&
+                        !idealistaConfigs.getCustomFilters().getNotInterestedMunicipality().contains(property.getMunicipality().toLowerCase()) &&
+                        property.getSize() > Double.parseDouble(idealistaConfigs.getFilters().get("size")) &&
                         notionProperties.stream().noneMatch(rowDTO ->
                                 rowDTO.getProperties().getId().getTitle().getFirst().getText().getContent().contains(property.getPropertyCode()))).toList();
 
