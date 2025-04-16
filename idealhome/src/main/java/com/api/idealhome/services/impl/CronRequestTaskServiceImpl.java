@@ -93,7 +93,7 @@ public class CronRequestTaskServiceImpl {
         List<IdealistaPropertyDTO> newPropertiesToAdd = foundIdealistaProperties.stream().filter(property ->
                 idealistaConfigs.getCustomFilters().getProvince().equalsIgnoreCase(property.getProvince()) &&
                         property.getRooms() >= idealistaConfigs.getCustomFilters().getMinimumRooms() &&
-                        !idealistaConfigs.getCustomFilters().getNotInterestedMunicipality().contains(property.getMunicipality().toLowerCase()) &&
+                        idealistaConfigs.getCustomFilters().getNotInterestedMunicipality().stream().noneMatch((property.getMunicipality().toLowerCase()::contains)) &&
                         property.getSize() > Double.parseDouble(idealistaConfigs.getFilters().get("size")) &&
                         notionProperties.stream().noneMatch(rowDTO ->
                                 rowDTO.getProperties().getId().getTitle().getFirst().getText().getContent().contains(property.getPropertyCode()))).toList();
