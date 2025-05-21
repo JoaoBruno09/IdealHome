@@ -20,6 +20,7 @@ import com.api.idealhome.models.dtos.RowFieldsDTO;
 import com.api.idealhome.models.dtos.TelegramRequestDTO;
 import com.api.idealhome.models.dtos.TextContentDTO;
 import com.api.idealhome.models.dtos.TextFieldDTO;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -82,6 +83,7 @@ public class CronRequestTaskServiceImpl {
         }
     }
 
+    @PostConstruct
     @Scheduled(cron = "0 0 12 * * ?", zone = "Europe/Lisbon")
     public void findNewPropertiesAndAddToNotion() {
         List<IdealistaPropertyDTO> foundIdealistaProperties = new ArrayList<>();
